@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Server Error - ShopZone{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="padding: 5rem 1rem; text-align: center;">
+  <div style="font-size: 5rem; font-weight: 900; color: #ea580c; line-height: 1; margin-bottom: 1rem;">
+    500
+  </div>
+  <h1 style="font-size: 2rem; font-weight: 800; color: var(--dark); margin-bottom: 0.5rem;">
+    Something Went Wrong
+  </h1>
+  <p style="color: var(--secondary); max-width: 450px; margin: 0 auto 2rem;">
+    Our server encountered an unexpected error. Please try refreshing or return to the homepage.
+  </p>
+  <div style="display: flex; gap: 1rem; justify-content: center;">
+    <a href="{{ url_for('shop.index') }}" class="btn btn-primary btn-lg">
+      <i class="bi bi-house"></i> Return Home
+    </a>
+  </div>
+</div>
+{% endblock %}

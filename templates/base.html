@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ShopZone - Modern E-Commerce{% endblock %}</title>
+
+  <!-- Google Fonts & Bootstrap Icons CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block styles %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Notification Bar -->
+  <div class="top-notice">
+    <div class="container">
+      ✨ <strong>Special Offer:</strong> Free worldwide express shipping on orders over $50! | 30-Day Money-Back Guarantee
+    </div>
+  </div>
+
+  <!-- Main Navigation Bar -->
+  <header class="navbar">
+    <div class="container navbar-container">
+      <!-- Brand Logo -->
+      <a href="{{ url_for('shop.index') }}" class="brand">
+        <div class="brand-icon">
+          <i class="bi bi-bag-heart-fill"></i>
+        </div>
+        Shop<span>Zone</span>
+      </a>
+
+      <!-- Search Bar -->
+      <div class="nav-search">
+        <form action="{{ url_for('shop.products') }}" method="GET">
+          <i class="bi bi-search search-icon"></i>
+          <input type="text" name="search" placeholder="Search headphones, keyboards, apparel..." value="{{ request.args.get('search', '') }}">
+        </form>
+      </div>
+
+      <!-- Navigation Links -->
+      <ul class="nav-links" id="navLinks">
+        <li class="nav-item">
+          <a href="{{ url_for('shop.index') }}"><i class="bi bi-house"></i> Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="{{ url_for('shop.products') }}"><i class="bi bi-grid"></i> Products</a>
+        </li>
+
+        {% if current_user %}
+          {% if current_user.role == 'admin' %}
+            <li class="nav-item admin-badge">
+              <a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-shield-lock-fill"></i> Admin Panel</a>
+            </li>
+          {% endif %}
+          <li class="nav-item">
+            <a href="{{ url_for('shop.orders') }}"><i class="bi bi-box-seam"></i> My Orders</a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.logout') }}" title="Sign out"><i class="bi bi-box-arrow-right"></i> Logout ({{ current_user.username }})</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a href="{{ url_for('auth.login') }}"><i class="bi bi-person"></i> Sign In</a>
+          </li>
+          <li class="nav-item">
+            <a href="{{ url_for('auth.register') }}"><i class="bi bi-person-plus"></i> Register</a>
+          </li>
+        {% endif %}
+
+        <!-- Shopping Cart Button -->
+        <li class="nav-item">
+          <a href="{{ url_for('shop.cart') }}" class="cart-button">
+            <i class="bi bi-cart3" style="font-size: 1.1rem;"></i>
+            <span>Cart</span>
+            <span class="cart-badge" style="{{ 'display:none;' if cart_count == 0 else '' }}">
+              {{ cart_count }}
+            </span>
+          </a>
+        </li>
+      </ul>
+
+      <!-- Mobile Hamburger Button -->
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle Navigation">
+        <i class="bi bi-list"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Categories Sub-Navigation -->
+  {% if nav_categories %}
+  <nav class="sub-nav">
+    <div class="container">
+      <ul class="sub-nav-list">
+        <li>
+          <a href="{{ url_for('shop.products') }}" class="{{ 'active' if not request.args.get('category') and request.endpoint == 'shop.products' else '' }}">
+            <i class="bi bi-stars"></i> All Categories
+          </a>
+        </li>
+        {% for cat in nav_categories %}
+        <li>
+          <a href="{{ url_for('shop.products', category=cat.slug) }}" class="{{ 'active' if request.args.get('category') == cat.slug else '' }}">
+            {{ cat.name }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </nav>
+  {% endif %}
+
+  <!-- Flash Messages -->
+  <div class="container flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span>{{ message }}</span>
+            <button type="button" class="alert-close" aria-label="Close">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Body Content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Modern Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="{{ url_for('shop.index') }}" class="brand">
+            <div class="brand-icon">
+              <i class="bi bi-bag-heart-fill"></i>
+            </div>
+            Shop<span>Zone</span>
+          </a>
+          <p>
+            Your premium destination for everyday technology, stylish fashion, curated books, and modern home essentials.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('shop.products') }}">All Products</a></li>
+            <li><a href="{{ url_for('shop.products', sort='newest') }}">New Arrivals</a></li>
+            <li><a href="{{ url_for('shop.products', sort='price_asc') }}">Deals & Budget</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Customer Care</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('shop.orders') }}">Track Orders</a></li>
+            <li><a href="{{ url_for('shop.cart') }}">Shopping Cart</a></li>
+            <li><a href="{{ url_for('auth.login') }}">Account Login</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Admin & REST API</h4>
+          <ul class="footer-links">
+            <li><a href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a></li>
+            <li><a href="/api/products" target="_blank">Products API (JSON)</a></li>
+            <li><a href="/api/categories" target="_blank">Categories API (JSON)</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 ShopZone E-Commerce Inc. All rights reserved. Powered by Flask & SQLite.</div>
+        <div>
+          Demo Admin: <code>admin@shopzone.com</code> / <code>admin123</code>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

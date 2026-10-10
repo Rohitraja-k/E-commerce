@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Secure Checkout - ShopZone{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem;">
+
+  <div style="margin-bottom: 1.5rem;">
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--dark);">Checkout</h1>
+    <p style="color: var(--secondary);">Complete your shipping address and payment to finalize your purchase</p>
+  </div>
+
+  <form action="{{ url_for('shop.checkout') }}" method="POST" id="checkoutForm">
+    <div class="checkout-layout">
+
+      <!-- Left Column: Forms -->
+      <div>
+
+        <!-- Contact Information -->
+        <div class="form-card">
+          <h2 class="form-section-title">
+            <i class="bi bi-person-circle" style="color: var(--primary);"></i> 1. Contact Information
+          </h2>
+
+          <div class="form-group">
+            <label class="form-label" for="customer_name">Full Name *</label>
+            <input type="text" id="customer_name" name="customer_name" class="form-control" required
+                   placeholder="e.g. Jane Doe"
+                   value="{{ form_data.get('customer_name') or (user.full_name if user else '') }}">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="customer_email">Email Address *</label>
+              <input type="email" id="customer_email" name="customer_email" class="form-control" required
+                     placeholder="e.g. jane@example.com"
+                     value="{{ form_data.get('customer_email') or (user.email if user else '') }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="customer_phone">Phone Number</label>
+              <input type="tel" id="customer_phone" name="customer_phone" class="form-control"
+                     placeholder="+1 (555) 000-0000"
+                     value="{{ form_data.get('customer_phone', '') }}">
+            </div>
+          </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="form-card">
+          <h2 class="form-section-title">
+            <i class="bi bi-geo-alt-fill" style="color: var(--primary);"></i> 2. Shipping Address
+          </h2>
+
+          <div class="form-group">
+            <label class="form-label" for="shipping_address">Street Address *</label>
+            <input type="text" id="shipping_address" name="shipping_address" class="form-control" required
+                   placeholder="e.g. 742 Evergreen Terrace, Apt 4B"
+                   value="{{ form_data.get('shipping_address', '') }}">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="city">City *</label>
+              <input type="text" id="city" name="city" class="form-control" required
+                     placeholder="e.g. Springfield"
+                     value="{{ form_data.get('city', '') }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="postal_code">Postal / ZIP Code *</label>
+              <input type="text" id="postal_code" name="postal_code" class="form-control" required
+                     placeholder="e.g. 97477"
+                     value="{{ form_data.get('postal_code', '') }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="country">Country</label>
+              <input type="text" id="country" name="country" class="form-control"
+                     placeholder="United States"
+                     value="{{ form_data.get('country', 'United States') }}">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" for="notes">Delivery Instructions / Order Notes (Optional)</label>
+            <textarea id="notes" name="notes" class="form-control" rows="2" placeholder="e.g. Leave package by side porch or call upon arrival">{{ form_data.get('notes', '') }}</textarea>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="form-card">
+          <h2 class="form-section-title">
+            <i class="bi bi-credit-card-2-front-fill" style="color: var(--primary);"></i> 3. Payment Method
+          </h2>
+
+          <div class="payment-options">
+            <label class="payment-radio-label active">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                <input type="radio" name="payment_method" value="Credit Card" checked>
+                <strong>Credit Card</strong>
+              </div>
+              <span style="font-size: 0.8rem; color: var(--secondary);">Visa, Mastercard, Amex</span>
+            </label>
+
+            <label class="payment-radio-label">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                <input type="radio" name="payment_method" value="PayPal">
+                <strong>PayPal</strong>
+              </div>
+              <span style="font-size: 0.8rem; color: var(--secondary);">Pay via PayPal account</span>
+            </label>
+
+            <label class="payment-radio-label">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                <input type="radio" name="payment_method" value="Cash on Delivery">
+                <strong>Cash on Delivery</strong>
+              </div>
+              <span style="font-size: 0.8rem; color: var(--secondary);">Pay in cash when delivered</span>
+            </label>
+          </div>
+
+          <!-- Simulated Card Fields -->
+          <div id="cardFields" style="background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem;">
+            <div class="form-group">
+              <label class="form-label">Demo Card Number</label>
+              <input type="text" class="form-control" placeholder="4242 •••• •••• 4242" value="4242 4242 4242 4242">
+            </div>
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Expiration Date</label>
+                <input type="text" class="form-control" placeholder="MM/YY" value="12/28">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Security CVC</label>
+                <input type="text" class="form-control" placeholder="CVC" value="321">
+              </div>
+            </div>
+            <p style="font-size: 0.775rem; color: var(--secondary); margin-top: 0.75rem;">
+              <i class="bi bi-info-circle"></i> This is a simulated checkout test field. No real money will be charged.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Order Review Sidebar -->
+      <div>
+        <div class="order-summary-card" style="position: sticky; top: 90px;">
+          <h2 class="summary-title">Order Review ({{ cart.item_count }} items)</h2>
+
+          <!-- Mini Item List -->
+          <div style="max-height: 280px; overflow-y: auto; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 0.5rem;">
+            {% for item in cart.cart_items %}
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; font-size: 0.875rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <img src="{{ item.image_url }}" alt="{{ item.name }}" style="width: 44px; height: 44px; border-radius: var(--radius-sm); object-fit: cover; border: 1px solid var(--border);">
+                <div>
+                  <div style="font-weight: 600; color: var(--dark); max-width: 170px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    {{ item.name }}
+                  </div>
+                  <div style="color: var(--secondary); font-size: 0.775rem;">Qty: {{ item.quantity }} &times; {{ item.price | currency }}</div>
+                </div>
+              </div>
+              <div style="font-weight: 600; color: var(--dark);">{{ item.subtotal | currency }}</div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Totals Breakdown -->
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span style="font-weight: 600; color: var(--dark);">{{ cart.subtotal | currency }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Sales Tax (8%):</span>
+            <span style="font-weight: 600; color: var(--dark);">{{ cart.tax | currency }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Shipping:</span>
+            <span style="font-weight: 600; color: {{ 'var(--success)' if cart.shipping_fee == 0 else 'var(--dark)' }};">
+              {% if cart.shipping_fee == 0 %}FREE{% else %}{{ cart.shipping_fee | currency }}{% endif %}
+            </span>
+          </div>
+
+          <div class="summary-total">
+            <span>Total to Pay:</span>
+            <span style="color: var(--primary);">{{ cart.total | currency }}</span>
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary btn-lg btn-block" id="btnPlaceOrder">
+              <i class="bi bi-shield-check"></i> Place Order Now ({{ cart.total | currency }})
+            </button>
+          </div>
+
+          <div style="margin-top: 1.25rem; font-size: 0.8rem; color: var(--secondary); text-align: center;">
+            By placing your order, you agree to ShopZone terms of service and return policy.
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </form>
+
+</div>
+{% endblock %}

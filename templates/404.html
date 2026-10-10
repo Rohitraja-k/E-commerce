@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - ShopZone{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="padding: 5rem 1rem; text-align: center;">
+  <div style="font-size: 5rem; font-weight: 900; color: var(--primary); line-height: 1; margin-bottom: 1rem;">
+    404
+  </div>
+  <h1 style="font-size: 2rem; font-weight: 800; color: var(--dark); margin-bottom: 0.5rem;">
+    Oops! Page Not Found
+  </h1>
+  <p style="color: var(--secondary); max-width: 450px; margin: 0 auto 2rem;">
+    The page or product you were looking for doesn't exist, has been removed, or had its URL changed.
+  </p>
+  <div style="display: flex; gap: 1rem; justify-content: center;">
+    <a href="{{ url_for('shop.index') }}" class="btn btn-primary btn-lg">
+      <i class="bi bi-house"></i> Return Home
+    </a>
+    <a href="{{ url_for('shop.products') }}" class="btn btn-outline btn-lg">
+      <i class="bi bi-grid"></i> Browse Catalog
+    </a>
+  </div>
+</div>
+{% endblock %}

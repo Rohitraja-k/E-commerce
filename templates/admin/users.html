@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}User Accounts - Admin - ShopZone{% endblock %}
+
+{% block content %}
+<div class="container container-wide" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+  <!-- Header -->
+  <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+      <div style="font-size: 0.8125rem; font-weight: 700; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em;">
+        User Directory
+      </div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--dark); margin-top: 0.2rem;">
+        Registered Accounts ({{ users | length }})
+      </h1>
+    </div>
+
+    <!-- Admin Nav -->
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline btn-sm">
+        <i class="bi bi-speedometer2"></i> Dashboard
+      </a>
+      <a href="{{ url_for('admin.products') }}" class="btn btn-outline btn-sm">
+        <i class="bi bi-box-seam"></i> Products
+      </a>
+      <a href="{{ url_for('admin.orders') }}" class="btn btn-outline btn-sm">
+        <i class="bi bi-receipt"></i> Orders
+      </a>
+      <a href="{{ url_for('admin.users') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-people"></i> Users
+      </a>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>User</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Orders Placed</th>
+          <th>Lifetime Spend</th>
+          <th>Registered</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td style="font-weight: 600; color: var(--secondary);">#{{ u.id }}</td>
+          <td>
+            <div style="font-weight: 700; color: var(--dark);">{{ u.full_name }}</div>
+            <div style="font-size: 0.775rem; color: var(--secondary);">@{{ u.username }}</div>
+          </td>
+          <td>
+            <a href="mailto:{{ u.email }}">{{ u.email }}</a>
+          </td>
+          <td>
+            {% if u.role == 'admin' %}
+              <span style="background: #fee2e2; color: #991b1b; font-weight: 700; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: var(--radius-full);">
+                <i class="bi bi-shield-lock-fill"></i> Admin
+              </span>
+            {% else %}
+              <span style="background: #f1f5f9; color: #475569; font-weight: 600; font-size: 0.75rem; padding: 0.2rem 0.6rem; border-radius: var(--radius-full);">
+                Customer
+              </span>
+            {% endif %}
+          </td>
+          <td style="font-weight: 600;">
+            {{ u.order_count }} order{{ 's' if u.order_count != 1 else '' }}
+          </td>
+          <td style="font-weight: 700; color: var(--dark);">
+            {{ u.total_spent | currency }}
+          </td>
+          <td style="color: var(--secondary); font-size: 0.85rem;">
+            {{ u.created_at | datetime_format }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

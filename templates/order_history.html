@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}My Order History - ShopZone{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+  <div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--dark);">My Orders</h1>
+    <p style="color: var(--secondary);">Track past purchases and check current shipping status</p>
+  </div>
+
+  {% if orders %}
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Date</th>
+          <th>Recipient</th>
+          <th>Payment</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td style="font-weight: 700; color: var(--primary);">
+            {{ order.order_number }}
+          </td>
+          <td style="color: var(--secondary); font-size: 0.85rem;">
+            {{ order.created_at | datetime_format }}
+          </td>
+          <td>
+            <div style="font-weight: 600;">{{ order.customer_name }}</div>
+            <div style="font-size: 0.775rem; color: var(--secondary);">{{ order.city }}, {{ order.postal_code }}</div>
+          </td>
+          <td>
+            <span style="font-size: 0.85rem;">{{ order.payment_method }}</span>
+          </td>
+          <td style="font-weight: 700; color: var(--dark);">
+            {{ order.total_amount | currency }}
+          </td>
+          <td>
+            <span class="status-pill status-{{ order.status.lower() }}">
+              {{ order.status }}
+            </span>
+          </td>
+          <td style="text-align: right;">
+            <a href="{{ url_for('shop.order_view', order_id=order.id) }}" class="btn btn-outline btn-sm">
+              <i class="bi bi-eye"></i> View Details
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 4rem 2rem; text-align: center;">
+    <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.25rem;">
+      <i class="bi bi-receipt"></i>
+    </div>
+    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--dark); margin-bottom: 0.5rem;">No orders found yet</h2>
+    <p style="color: var(--secondary); margin-bottom: 1.5rem;">
+      You have not placed any orders yet. Once you make a purchase, it will appear here.
+    </p>
+    <a href="{{ url_for('shop.products') }}" class="btn btn-primary">
+      <i class="bi bi-bag"></i> Start Browsing
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

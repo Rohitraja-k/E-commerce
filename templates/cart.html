@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Shopping Cart - ShopZone{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem;">
+
+  <div style="margin-bottom: 1.5rem;">
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--dark);">Shopping Cart</h1>
+    <p style="color: var(--secondary);">Review your items before proceeding to secure checkout</p>
+  </div>
+
+  {% if cart.cart_items %}
+  <div class="cart-layout">
+
+    <!-- Cart Items Table Card -->
+    <div class="cart-table-card">
+      <div style="overflow-x: auto;">
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Price</th>
+              <th style="text-align: center;">Quantity</th>
+              <th style="text-align: right;">Total</th>
+              <th style="text-align: center;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in cart.cart_items %}
+            <tr>
+              <td>
+                <div class="cart-item-info">
+                  <a href="{{ url_for('shop.product_detail', product_id=item.product_id) }}">
+                    <img src="{{ item.image_url }}" alt="{{ item.name }}" class="cart-item-img" onerror="this.src='https://placehold.co/100x100/4f46e5/ffffff?text=Item';">
+                  </a>
+                  <div>
+                    <div class="cart-item-category">{{ item.category }}</div>
+                    <div class="cart-item-name">
+                      <a href="{{ url_for('shop.product_detail', product_id=item.product_id) }}">{{ item.name }}</a>
+                    </div>
+                    {% if item.stock <= 5 %}
+                      <span style="font-size: 0.75rem; color: #ea580c; font-weight: 600;">Only {{ item.stock }} in stock</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </td>
+              <td style="font-weight: 600; color: var(--dark);">
+                {{ item.price | currency }}
+              </td>
+              <td style="text-align: center;">
+                <form action="{{ url_for('shop.cart_update', product_id=item.product_id) }}" method="POST" style="display: inline-block;">
+                  <div class="quantity-control" style="transform: scale(0.9);">
+                    <button type="submit" name="quantity" value="{{ item.quantity - 1 }}" class="quantity-btn" title="Decrease">&minus;</button>
+                    <input type="text" class="quantity-input" value="{{ item.quantity }}" readonly style="width: 40px; height: 38px;">
+                    <button type="submit" name="quantity" value="{{ item.quantity + 1 }}" class="quantity-btn" title="Increase" {{ 'disabled' if item.quantity >= item.stock else '' }}>&plus;</button>
+                  </div>
+                </form>
+              </td>
+              <td style="text-align: right; font-weight: 700; color: var(--dark); font-size: 1.05rem;">
+                {{ item.subtotal | currency }}
+              </td>
+              <td style="text-align: center;">
+                <form action="{{ url_for('shop.cart_remove', product_id=item.product_id) }}" method="POST">
+                  <button type="submit" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: transparent;" title="Remove Item">
+                    <i class="bi bi-trash3" style="font-size: 1.1rem;"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border);">
+        <a href="{{ url_for('shop.products') }}" class="btn btn-outline">
+          <i class="bi bi-arrow-left"></i> Continue Shopping
+        </a>
+      </div>
+    </div>
+
+    <!-- Order Summary Card -->
+    <div class="order-summary-card">
+      <h2 class="summary-title">Order Summary</h2>
+
+      <!-- Free Shipping Meter -->
+      <div class="free-shipping-progress">
+        {% if cart.free_shipping_eligible %}
+          <div style="color: #065f46; font-weight: 600;">
+            <i class="bi bi-check-circle-fill"></i> You unlocked <strong>FREE Shipping!</strong>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width: 100%; background: var(--success);"></div>
+          </div>
+        {% else %}
+          <div>
+            Add <strong>{{ cart.amount_for_free_shipping | currency }}</strong> more to get <strong>FREE Shipping</strong>!
+          </div>
+          {% set pct = ((cart.subtotal / 50.0) * 100) | round | int %}
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" style="width: {{ [pct, 100]|min }}%;"></div>
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="summary-row">
+        <span>Items Subtotal ({{ cart.item_count }}):</span>
+        <span style="font-weight: 600; color: var(--dark);">{{ cart.subtotal | currency }}</span>
+      </div>
+
+      <div class="summary-row">
+        <span>Estimated Sales Tax (8%):</span>
+        <span style="font-weight: 600; color: var(--dark);">{{ cart.tax | currency }}</span>
+      </div>
+
+      <div class="summary-row">
+        <span>Shipping:</span>
+        <span style="font-weight: 600; color: {{ 'var(--success)' if cart.shipping_fee == 0 else 'var(--dark)' }};">
+          {% if cart.shipping_fee == 0 %}
+            FREE
+          {% else %}
+            {{ cart.shipping_fee | currency }}
+          {% endif %}
+        </span>
+      </div>
+
+      <div class="summary-total">
+        <span>Estimated Total:</span>
+        <span style="color: var(--primary);">{{ cart.total | currency }}</span>
+      </div>
+
+      <div style="margin-top: 1.75rem;">
+        <a href="{{ url_for('shop.checkout') }}" class="btn btn-primary btn-lg btn-block">
+          <i class="bi bi-lock-fill"></i> Proceed to Checkout
+        </a>
+      </div>
+
+      <div style="margin-top: 1.25rem; font-size: 0.8rem; color: var(--secondary); text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+        <i class="bi bi-shield-check" style="font-size: 1rem; color: var(--success);"></i>
+        Encrypted 256-Bit SSL Checkout
+      </div>
+    </div>
+
+  </div>
+  {% else %}
+  <!-- Empty Cart State -->
+  <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 5rem 2rem; text-align: center; margin: 2rem 0 4rem;">
+    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 1.5rem;">
+      <i class="bi bi-cart-x"></i>
+    </div>
+    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--dark); margin-bottom: 0.5rem;">Your cart is empty</h2>
+    <p style="color: var(--secondary); max-width: 440px; margin: 0 auto 2rem;">
+      Looks like you haven't added anything to your cart yet. Explore our featured items and bestsellers to get started.
+    </p>
+    <a href="{{ url_for('shop.products') }}" class="btn btn-primary btn-lg">
+      <i class="bi bi-bag"></i> Start Shopping
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

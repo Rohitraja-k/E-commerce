@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Order {{ order.order_number }} - Admin - ShopZone{% endblock %}
+
+{% block content %}
+<div class="container container-wide" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+  <!-- Header -->
+  <div style="margin-bottom: 2rem;">
+    <a href="{{ url_for('admin.orders') }}" style="font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0.5rem;">
+      <i class="bi bi-arrow-left"></i> Back to Orders
+    </a>
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+      <div>
+        <h1 style="font-size: 2rem; font-weight: 800; color: var(--dark);">
+          Order {{ order.order_number }}
+        </h1>
+        <p style="color: var(--secondary);">
+          Placed on {{ order.created_at | datetime_format }}
+        </p>
+      </div>
+
+      <!-- Status Update Form -->
+      <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem 1.25rem; display: flex; align-items: center; gap: 1rem; box-shadow: var(--shadow-sm);">
+        <span style="font-weight: 600; font-size: 0.875rem;">Status:</span>
+        <form action="{{ url_for('admin.update_order_status', order_id=order.id) }}" method="POST" style="display: flex; gap: 0.5rem; align-items: center;">
+          <select name="status" class="form-control" style="width: auto; padding: 0.4rem 0.8rem; font-size: 0.875rem;">
+            {% for st in ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'] %}
+            <option value="{{ st }}" {{ 'selected' if order.status == st else '' }}>
+              {{ st }}
+            </option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-primary btn-sm">Update</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+
+    <!-- Left Column: Ordered Items Table -->
+    <div>
+      <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--dark); margin-bottom: 1.25rem;">
+          Purchased Items ({{ items | length }})
+        </h2>
+
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.925rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); text-align: left;">
+                <th style="padding: 0.75rem 0.5rem; color: var(--secondary); font-size: 0.8rem; text-transform: uppercase;">Product</th>
+                <th style="padding: 0.75rem 0.5rem; text-align: right; color: var(--secondary); font-size: 0.8rem; text-transform: uppercase;">Unit Price</th>
+                <th style="padding: 0.75rem 0.5rem; text-align: center; color: var(--secondary); font-size: 0.8rem; text-transform: uppercase;">Quantity</th>
+                <th style="padding: 0.75rem 0.5rem; text-align: right; color: var(--secondary); font-size: 0.8rem; text-transform: uppercase;">Line Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items %}
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 1rem 0.5rem; font-weight: 600; color: var(--dark);">
+                  {{ item.product_name }}
+                  {% if item.product_id %}
+                    <a href="{{ url_for('shop.product_detail', product_id=item.product_id) }}" target="_blank" style="font-size: 0.775rem; margin-left: 0.5rem;">[View]</a>
+                  {% endif %}
+                </td>
+                <td style="padding: 1rem 0.5rem; text-align: right; color: var(--secondary);">
+                  {{ item.price | currency }}
+                </td>
+                <td style="padding: 1rem 0.5rem; text-align: center; font-weight: 600;">
+                  {{ item.quantity }}
+                </td>
+                <td style="padding: 1rem 0.5rem; text-align: right; font-weight: 700; color: var(--dark);">
+                  {{ item.subtotal | currency }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Totals summary -->
+        <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; font-size: 0.925rem;">
+          <div style="width: 250px; display: flex; justify-content: space-between;">
+            <span style="color: var(--secondary);">Subtotal:</span>
+            <span style="font-weight: 600;">{{ order.subtotal | currency }}</span>
+          </div>
+          <div style="width: 250px; display: flex; justify-content: space-between;">
+            <span style="color: var(--secondary);">Tax:</span>
+            <span style="font-weight: 600;">{{ order.tax | currency }}</span>
+          </div>
+          <div style="width: 250px; display: flex; justify-content: space-between;">
+            <span style="color: var(--secondary);">Shipping:</span>
+            <span style="font-weight: 600;">{{ order.shipping_fee | currency }}</span>
+          </div>
+          <div style="width: 250px; display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 800; border-top: 2px solid var(--border); padding-top: 0.5rem; margin-top: 0.25rem;">
+            <span>Total:</span>
+            <span style="color: var(--primary);">{{ order.total_amount | currency }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Customer & Delivery Details -->
+    <div>
+      <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: 1rem;">
+          <i class="bi bi-person"></i> Customer Info
+        </h2>
+        <div style="font-size: 0.925rem; display: flex; flex-direction: column; gap: 0.5rem;">
+          <div>
+            <div style="font-size: 0.775rem; color: var(--secondary); text-transform: uppercase;">Full Name</div>
+            <div style="font-weight: 600; color: var(--dark);">{{ order.customer_name }}</div>
+          </div>
+          <div>
+            <div style="font-size: 0.775rem; color: var(--secondary); text-transform: uppercase;">Email Address</div>
+            <div><a href="mailto:{{ order.customer_email }}">{{ order.customer_email }}</a></div>
+          </div>
+          {% if order.customer_phone %}
+          <div>
+            <div style="font-size: 0.775rem; color: var(--secondary); text-transform: uppercase;">Phone</div>
+            <div>{{ order.customer_phone }}</div>
+          </div>
+          {% endif %}
+          {% if order.account_username %}
+          <div>
+            <div style="font-size: 0.775rem; color: var(--secondary); text-transform: uppercase;">ShopZone Account</div>
+            <div style="font-weight: 600;">@{{ order.account_username }} (User ID: {{ order.user_id }})</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+        <h2 style="font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: 1rem;">
+          <i class="bi bi-geo-alt"></i> Shipping & Payment
+        </h2>
+        <div style="font-size: 0.925rem; display: flex; flex-direction: column; gap: 0.75rem;">
+          <div>
+            <div style="font-size: 0.775rem; color: var(--secondary); text-transform: uppercase;">Address</div>
+            <div style="font-weight: 500; color: var(--dark); line-height: 1.4;">
+              {{ order.shipping_address }}<br>
+              {{ order.city }}, {{ order.postal_code }}<br>
+              {{ order.country }}
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 0.775rem; color: var(--secondary); text-transform: uppercase;">Payment Method</div>
+            <div style="font-weight: 600; color: var(--dark);">{{ order.payment_method }}</div>
+          </div>
+          {% if order.notes %}
+          <div style="border-top: 1px solid var(--border); padding-top: 0.75rem;">
+            <div style="font-size: 0.775rem; color: var(--secondary); text-transform: uppercase;">Customer Instructions</div>
+            <div style="font-style: italic; color: #475569;">"{{ order.notes }}"</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

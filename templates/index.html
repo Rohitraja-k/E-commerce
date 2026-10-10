@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}ShopZone - Discover Quality Products Everyday{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Hero Banner -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-tag">
+        <i class="bi bi-stars"></i> Curated Essentials & Tech
+      </div>
+      <h1>Elevate Your Daily Lifestyle</h1>
+      <p>
+        Discover premium headphones, mechanical keyboards, sustainable apparel, and artisanal home goods. Handpicked quality with instant dispatch.
+      </p>
+      <div class="hero-actions">
+        <a href="{{ url_for('shop.products') }}" class="btn btn-lg hero-btn-primary">
+          <i class="bi bi-bag-check"></i> Explore Catalog
+        </a>
+        <a href="{{ url_for('shop.products', sort='price_asc') }}" class="btn btn-lg hero-btn-outline">
+          <i class="bi bi-lightning-charge"></i> Best Deals
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Value Propositions / Highlights -->
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon"><i class="bi bi-truck"></i></div>
+      <div>
+        <div class="feature-title">Free Shipping</div>
+        <div class="feature-desc">On orders over $50.00</div>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+      <div>
+        <div class="feature-title">Secure Payments</div>
+        <div class="feature-desc">Encrypted checkouts</div>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="bi bi-arrow-counterclockwise"></i></div>
+      <div>
+        <div class="feature-title">30-Day Returns</div>
+        <div class="feature-desc">Hassle-free exchange</div>
+      </div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon"><i class="bi bi-headset"></i></div>
+      <div>
+        <div class="feature-title">24/7 Support</div>
+        <div class="feature-desc">Dedicated assistance</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shop by Category -->
+  <section style="margin-bottom: 3.5rem;">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Shop by Category</h2>
+        <p class="section-subtitle">Browse through our meticulously curated product collections</p>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
+      {% for cat in categories %}
+      <a href="{{ url_for('shop.products', category=cat.slug) }}" style="text-decoration: none; color: inherit;">
+        <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; transition: var(--transition); box-shadow: var(--shadow-sm);" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='#818cf8';" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border)';">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+            <div style="width: 48px; height: 48px; border-radius: var(--radius-md); background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+              <i class="bi {{ cat.icon or 'bi-tag' }}"></i>
+            </div>
+            <span style="font-size: 0.8rem; font-weight: 600; color: var(--secondary); background: var(--light); padding: 0.2rem 0.5rem; border-radius: var(--radius-full);">
+              {{ cat.product_count }} items
+            </span>
+          </div>
+          <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--dark); margin-bottom: 0.25rem;">{{ cat.name }}</h3>
+          <p style="font-size: 0.85rem; color: var(--secondary); line-height: 1.4;">{{ cat.description }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- Featured Products -->
+  <section>
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Featured Products</h2>
+        <p class="section-subtitle">Top-rated items loved by thousands of happy customers</p>
+      </div>
+      <a href="{{ url_for('shop.products') }}" class="btn btn-outline btn-sm">
+        View All <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="products-grid">
+      {% for product in featured_products %}
+      <div class="product-card">
+        <div class="product-image-wrap">
+          {% if product.is_featured %}
+            <span class="badge-featured">Featured</span>
+          {% endif %}
+          <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy" onerror="this.src='https://placehold.co/600x450/4f46e5/ffffff?text={{ product.name | urlencode }}';">
+          </a>
+        </div>
+        <div class="product-body">
+          <div class="product-category">{{ product.category_name }}</div>
+          <h3 class="product-title">
+            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" title="{{ product.name }}">
+              {{ product.name }}
+            </a>
+          </h3>
+
+          <div class="product-price-row">
+            <div class="product-price">{{ product.price | currency }}</div>
+            {% if product.stock > 10 %}
+              <span class="stock-tag stock-in">In Stock</span>
+            {% elif product.stock > 0 %}
+              <span class="stock-tag stock-low">Only {{ product.stock }} Left</span>
+            {% else %}
+              <span class="stock-tag stock-out">Out of Stock</span>
+            {% endif %}
+          </div>
+
+          <div class="product-actions">
+            {% if product.stock > 0 %}
+              <button type="button" class="btn btn-primary btn-block btn-quick-add" data-product-id="{{ product.id }}">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+              </button>
+            {% else %}
+              <button type="button" class="btn btn-secondary btn-block" disabled>
+                Out of Stock
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- New Arrivals Grid -->
+  {% if new_arrivals %}
+  <section style="margin-bottom: 4rem;">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">New Arrivals</h2>
+        <p class="section-subtitle">Fresh additions just landed in our catalog</p>
+      </div>
+    </div>
+
+    <div class="products-grid">
+      {% for product in new_arrivals %}
+      <div class="product-card">
+        <div class="product-image-wrap">
+          <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy" onerror="this.src='https://placehold.co/600x450/4f46e5/ffffff?text={{ product.name | urlencode }}';">
+          </a>
+        </div>
+        <div class="product-body">
+          <div class="product-category">{{ product.category_name }}</div>
+          <h3 class="product-title">
+            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+              {{ product.name }}
+            </a>
+          </h3>
+
+          <div class="product-price-row">
+            <div class="product-price">{{ product.price | currency }}</div>
+            <span class="stock-tag stock-in">{{ product.stock }} in stock</span>
+          </div>
+
+          <div class="product-actions">
+            <button type="button" class="btn btn-outline btn-block btn-quick-add" data-product-id="{{ product.id }}">
+              <i class="bi bi-cart-plus"></i> Quick Add
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - ShopZone{% endblock %}
+
+{% block content %}
+<div class="container container-wide" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+  <!-- Admin Subheader -->
+  <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+    <div>
+      <div style="font-size: 0.8125rem; font-weight: 700; color: #b91c1c; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.35rem;">
+        <i class="bi bi-shield-check"></i> Admin Center
+      </div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--dark); margin-top: 0.2rem;">Store Overview</h1>
+    </div>
+
+    <!-- Admin Nav Shortcuts -->
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-sm">
+        <i class="bi bi-speedometer2"></i> Dashboard
+      </a>
+      <a href="{{ url_for('admin.products') }}" class="btn btn-outline btn-sm">
+        <i class="bi bi-box-seam"></i> Products
+      </a>
+      <a href="{{ url_for('admin.orders') }}" class="btn btn-outline btn-sm">
+        <i class="bi bi-receipt"></i> Orders
+      </a>
+      <a href="{{ url_for('admin.users') }}" class="btn btn-outline btn-sm">
+        <i class="bi bi-people"></i> Users
+      </a>
+      <a href="{{ url_for('admin.product_new') }}" class="btn btn-success btn-sm">
+        <i class="bi bi-plus-circle"></i> Add Product
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Grid -->
+  <div class="admin-metrics-grid">
+    <div class="metric-card">
+      <div class="metric-info">
+        <h3>Total Revenue</h3>
+        <div class="value">{{ total_revenue | currency }}</div>
+      </div>
+      <div class="metric-icon-wrap icon-green">
+        <i class="bi bi-currency-dollar"></i>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-info">
+        <h3>Total Orders</h3>
+        <div class="value">{{ orders_count }}</div>
+      </div>
+      <div class="metric-icon-wrap icon-blue">
+        <i class="bi bi-bag-check"></i>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-info">
+        <h3>Active Products</h3>
+        <div class="value">{{ products_count }}</div>
+      </div>
+      <div class="metric-icon-wrap icon-purple">
+        <i class="bi bi-box"></i>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-info">
+        <h3>Customers</h3>
+        <div class="value">{{ customers_count }}</div>
+      </div>
+      <div class="metric-icon-wrap icon-orange">
+        <i class="bi bi-people"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two Column Layout: Low Stock Alerts & Recent Orders -->
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 2rem;">
+
+    <!-- Recent Orders -->
+    <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--dark);">Recent Orders</h2>
+        <a href="{{ url_for('admin.orders') }}" class="btn btn-outline btn-sm">View All Orders</a>
+      </div>
+
+      {% if recent_orders %}
+      <div class="table-responsive" style="border: none; box-shadow: none;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for o in recent_orders %}
+            <tr>
+              <td style="font-weight: 700; color: var(--primary);">{{ o.order_number }}</td>
+              <td>
+                <div style="font-weight: 600;">{{ o.customer_name }}</div>
+                <div style="font-size: 0.775rem; color: var(--secondary);">{{ o.customer_email }}</div>
+              </td>
+              <td style="font-weight: 700;">{{ o.total_amount | currency }}</td>
+              <td>
+                <span class="status-pill status-{{ o.status.lower() }}">{{ o.status }}</span>
+              </td>
+              <td style="text-align: right;">
+                <a href="{{ url_for('admin.order_detail', order_id=o.id) }}" class="btn btn-outline btn-sm">
+                  Manage
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+        <p style="color: var(--secondary); padding: 1rem 0;">No customer orders placed yet.</p>
+      {% endif %}
+    </div>
+
+    <!-- Low Stock Inventory Alerts -->
+    <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); height: fit-content;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h2 style="font-size: 1.2rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 0.4rem;">
+          <i class="bi bi-exclamation-triangle" style="color: #ea580c;"></i> Low Stock
+        </h2>
+      </div>
+
+      {% if low_stock_products %}
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for p in low_stock_products %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #fffbeb; border: 1px solid #fef3c7; border-radius: var(--radius-md);">
+          <div>
+            <div style="font-weight: 600; font-size: 0.875rem; color: #92400e;">{{ p.name }}</div>
+            <div style="font-size: 0.775rem; color: #b45309;">{{ p.category_name }} &bull; {{ p.price | currency }}</div>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-weight: 800; font-size: 1rem; color: #dc2626;">{{ p.stock }}</span>
+            <div style="margin-top: 0.2rem;">
+              <a href="{{ url_for('admin.product_edit', product_id=p.id) }}" style="font-size: 0.75rem; font-weight: 600; text-decoration: underline;">Restock</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+        <p style="color: var(--success); font-size: 0.875rem; font-weight: 500;">
+          <i class="bi bi-check-circle"></i> All products have healthy inventory levels!
+        </p>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if is_edit %}Edit {{ product.name }}{% else %}New Product{% endif %} - Admin - ShopZone
+{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+  <!-- Header -->
+  <div style="margin-bottom: 2rem;">
+    <a href="{{ url_for('admin.products') }}" style="font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0.5rem;">
+      <i class="bi bi-arrow-left"></i> Back to Products List
+    </a>
+    <h1 style="font-size: 2rem; font-weight: 800; color: var(--dark);">
+      {% if is_edit %}Edit Product{% else %}Add New Product{% endif %}
+    </h1>
+    <p style="color: var(--secondary);">Fill in the details below to update your catalog</p>
+  </div>
+
+  <div class="form-card">
+    <form method="POST">
+      <!-- Product Name -->
+      <div class="form-group">
+        <label class="form-label" for="name">Product Name *</label>
+        <input type="text" id="name" name="name" class="form-control" required
+               placeholder="e.g. Wireless Ergonomic Mouse"
+               value="{{ form_data.get('name', '') }}">
+      </div>
+
+      <!-- Category & Price -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="category_id">Category *</label>
+          <select id="category_id" name="category_id" class="form-control" required>
+            <option value="">Select Category...</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {{ 'selected' if form_data.get('category_id')|string == cat.id|string else '' }}>
+              {{ cat.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="price">Price ($) *</label>
+          <input type="number" step="0.01" min="0" id="price" name="price" class="form-control" required
+                 placeholder="29.99"
+                 value="{{ form_data.get('price', '') }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="stock">Stock Quantity *</label>
+          <input type="number" min="0" id="stock" name="stock" class="form-control" required
+                 placeholder="50"
+                 value="{{ form_data.get('stock', '0') }}">
+        </div>
+      </div>
+
+      <!-- Image URL -->
+      <div class="form-group">
+        <label class="form-label" for="image_url">Image URL *</label>
+        <input type="url" id="image_url" name="image_url" class="form-control" required
+               placeholder="https://images.unsplash.com/..."
+               value="{{ form_data.get('image_url', '') }}"
+               oninput="updateImagePreview(this.value)">
+        <span style="font-size: 0.775rem; color: var(--secondary);">Enter a direct image link (e.g. from Unsplash or CDN)</span>
+      </div>
+
+      <!-- Live Image Preview -->
+      <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 1rem; background: #f8fafc; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border);">
+        <img id="imgPreview" src="{{ form_data.get('image_url') or 'https://placehold.co/100x100/4f46e5/ffffff?text=Preview' }}" alt="Preview" style="width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border);" onerror="this.src='https://placehold.co/100x100/4f46e5/ffffff?text=No+Image';">
+        <div>
+          <div style="font-size: 0.85rem; font-weight: 600; color: var(--dark);">Image Live Preview</div>
+          <div style="font-size: 0.775rem; color: var(--secondary);">Inspect how this image displays before publishing</div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group">
+        <label class="form-label" for="description">Full Description *</label>
+        <textarea id="description" name="description" class="form-control" rows="5" required
+                  placeholder="Provide product features, specifications, and details...">{{ form_data.get('description', '') }}</textarea>
+      </div>
+
+      <!-- Featured Toggle -->
+      <div class="form-group">
+        <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer;">
+          <input type="checkbox" name="is_featured" value="1" style="width: 18px; height: 18px;"
+                 {{ 'checked' if form_data.get('is_featured')|string in ['1', 'True'] else '' }}>
+          <span style="font-weight: 600; font-size: 0.925rem; color: var(--dark);">Feature on Homepage Carousel</span>
+        </label>
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="bi bi-check2"></i> {% if is_edit %}Save Changes{% else %}Create Product{% endif %}
+        </button>
+        <a href="{{ url_for('admin.products') }}" class="btn btn-outline btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateImagePreview(url) {
+  const preview = document.getElementById('imgPreview');
+  if (url && url.startsWith('http')) {
+    preview.src = url;
+  } else {
+    preview.src = 'https://placehold.co/100x100/4f46e5/ffffff?text=Preview';
+  }
+}
+</script>
+{% endblock %}

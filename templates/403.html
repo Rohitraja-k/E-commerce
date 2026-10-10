@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Access Denied - ShopZone{% endblock %}
+
+{% block content %}
+<div class="container container-narrow" style="padding: 5rem 1rem; text-align: center;">
+  <div style="font-size: 5rem; font-weight: 900; color: #dc2626; line-height: 1; margin-bottom: 1rem;">
+    403
+  </div>
+  <h1 style="font-size: 2rem; font-weight: 800; color: var(--dark); margin-bottom: 0.5rem;">
+    Access Forbidden
+  </h1>
+  <p style="color: var(--secondary); max-width: 450px; margin: 0 auto 2rem;">
+    You don't have permission to view this resource. Administrator credentials are required.
+  </p>
+  <div style="display: flex; gap: 1rem; justify-content: center;">
+    <a href="{{ url_for('shop.index') }}" class="btn btn-primary btn-lg">
+      <i class="bi bi-house"></i> Return Home
+    </a>
+    <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">
+      <i class="bi bi-box-arrow-in-right"></i> Sign In as Admin
+    </a>
+  </div>
+</div>
+{% endblock %}

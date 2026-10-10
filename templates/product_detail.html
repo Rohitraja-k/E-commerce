@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - ShopZone{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 1.5rem;">
+
+  <!-- Breadcrumbs -->
+  <nav style="display: flex; gap: 0.5rem; align-items: center; font-size: 0.85rem; color: var(--secondary); margin-bottom: 1.5rem;">
+    <a href="{{ url_for('shop.index') }}">Home</a>
+    <span>/</span>
+    <a href="{{ url_for('shop.products', category=product.category_slug) }}">{{ product.category_name }}</a>
+    <span>/</span>
+    <span style="color: var(--dark); font-weight: 600;">{{ product.name }}</span>
+  </nav>
+
+  <!-- Product Detail Card -->
+  <div class="product-detail-grid">
+    <!-- Gallery Column -->
+    <div class="detail-gallery">
+      <img src="{{ product.image_url }}" alt="{{ product.name }}" onerror="this.src='https://placehold.co/800x600/4f46e5/ffffff?text={{ product.name | urlencode }}';">
+    </div>
+
+    <!-- Product Details Info -->
+    <div class="detail-info">
+      <div class="detail-category">{{ product.category_name }}</div>
+      <h1 class="detail-title">{{ product.name }}</h1>
+      <div class="detail-price">{{ product.price | currency }}</div>
+
+      <div class="detail-description">
+        {{ product.description }}
+      </div>
+
+      <div class="detail-meta-list">
+        <div class="detail-meta-item">
+          <span class="detail-meta-label">Availability:</span>
+          <span class="detail-meta-value">
+            {% if product.stock > 10 %}
+              <span class="stock-tag stock-in">In Stock ({{ product.stock }} units)</span>
+            {% elif product.stock > 0 %}
+              <span class="stock-tag stock-low">Only {{ product.stock }} units left!</span>
+            {% else %}
+              <span class="stock-tag stock-out">Currently Out of Stock</span>
+            {% endif %}
+          </span>
+        </div>
+        <div class="detail-meta-item">
+          <span class="detail-meta-label">Category:</span>
+          <span class="detail-meta-value">{{ product.category_name }}</span>
+        </div>
+        <div class="detail-meta-item">
+          <span class="detail-meta-label">Delivery:</span>
+          <span class="detail-meta-value">Dispatched within 24 hours. Free returns.</span>
+        </div>
+      </div>
+
+      <!-- Add to Cart Form -->
+      {% if product.stock > 0 %}
+      <form action="{{ url_for('shop.cart_add', product_id=product.id) }}" method="POST" style="margin-top: auto;">
+        <input type="hidden" name="next" value="{{ request.url }}">
+        <div class="detail-actions">
+          <div class="quantity-control">
+            <button type="button" class="quantity-btn qty-minus" aria-label="Decrease">&minus;</button>
+            <input type="number" name="quantity" class="quantity-input" value="1" min="1" max="{{ product.stock }}" readonly>
+            <button type="button" class="quantity-btn qty-plus" aria-label="Increase">&plus;</button>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg" style="flex: 1;">
+            <i class="bi bi-cart-plus"></i> Add to Cart
+          </button>
+        </div>
+      </form>
+      {% else %}
+      <div style="margin-top: auto;">
+        <button type="button" class="btn btn-secondary btn-lg btn-block" disabled>
+          Out of Stock
+        </button>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Related Products -->
+  {% if related_products %}
+  <section style="margin-top: 3.5rem; margin-bottom: 4rem;">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Related Items</h2>
+        <p class="section-subtitle">More products from {{ product.category_name }}</p>
+      </div>
+    </div>
+
+    <div class="products-grid">
+      {% for rel in related_products %}
+      <div class="product-card">
+        <div class="product-image-wrap">
+          <a href="{{ url_for('shop.product_detail', product_id=rel.id) }}">
+            <img src="{{ rel.image_url }}" alt="{{ rel.name }}" loading="lazy" onerror="this.src='https://placehold.co/600x450/4f46e5/ffffff?text={{ rel.name | urlencode }}';">
+          </a>
+        </div>
+        <div class="product-body">
+          <div class="product-category">{{ rel.category_name }}</div>
+          <h3 class="product-title">
+            <a href="{{ url_for('shop.product_detail', product_id=rel.id) }}">
+              {{ rel.name }}
+            </a>
+          </h3>
+          <div class="product-price-row">
+            <div class="product-price">{{ rel.price | currency }}</div>
+            <span class="stock-tag stock-in">{{ rel.stock }} left</span>
+          </div>
+          <div class="product-actions">
+            <button type="button" class="btn btn-outline btn-block btn-quick-add" data-product-id="{{ rel.id }}">
+              <i class="bi bi-cart-plus"></i> Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}

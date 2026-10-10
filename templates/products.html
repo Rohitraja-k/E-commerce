@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if active_category %}{{ active_category.name }} Products{% else %}All Products{% endif %} - ShopZone
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem;">
+
+  <!-- Header & Filters Bar -->
+  <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.25rem;">
+      <div>
+        <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--dark);">
+          {% if active_category %}
+            {{ active_category.name }}
+          {% elif search %}
+            Search results for "{{ search }}"
+          {% else %}
+            All Products
+          {% endif %}
+        </h1>
+        <p style="color: var(--secondary); font-size: 0.9rem;">
+          Showing {{ products | length }} item{{ 's' if products|length != 1 else '' }} in store
+        </p>
+      </div>
+
+      <!-- Quick Category Pills -->
+      <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="{{ url_for('shop.products') }}" class="btn btn-sm {{ 'btn-primary' if not selected_category else 'btn-outline' }}">
+          All
+        </a>
+        {% for cat in categories %}
+        <a href="{{ url_for('shop.products', category=cat.slug, sort=sort_by) }}" class="btn btn-sm {{ 'btn-primary' if selected_category == cat.slug else 'btn-outline' }}">
+          {{ cat.name }}
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="GET" action="{{ url_for('shop.products') }}" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; border-top: 1px solid var(--border); padding-top: 1.25rem;">
+      <div style="flex: 2; min-width: 220px;">
+        <input type="text" name="search" class="form-control" placeholder="Search by product name or keyword..." value="{{ search }}">
+      </div>
+
+      <div style="flex: 1; min-width: 160px;">
+        <select name="category" class="form-control">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+          <option value="{{ cat.slug }}" {{ 'selected' if selected_category == cat.slug else '' }}>
+            {{ cat.name }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="flex: 1; min-width: 160px;">
+        <select name="sort" class="form-control">
+          <option value="newest" {{ 'selected' if sort_by == 'newest' else '' }}>Sort: Newest First</option>
+          <option value="price_asc" {{ 'selected' if sort_by == 'price_asc' else '' }}>Price: Low to High</option>
+          <option value="price_desc" {{ 'selected' if sort_by == 'price_desc' else '' }}>Price: High to Low</option>
+          <option value="name" {{ 'selected' if sort_by == 'name' else '' }}>Name: A to Z</option>
+        </select>
+      </div>
+
+      <div>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-funnel"></i> Apply
+        </button>
+        {% if search or selected_category %}
+          <a href="{{ url_for('shop.products') }}" class="btn btn-outline" title="Reset Filters">
+            <i class="bi bi-x-circle"></i> Reset
+          </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Products Display -->
+  {% if products %}
+    <div class="products-grid">
+      {% for product in products %}
+      <div class="product-card">
+        <div class="product-image-wrap">
+          {% if product.is_featured %}
+            <span class="badge-featured">Featured</span>
+          {% endif %}
+          <a href="{{ url_for('shop.product_detail', product_id=product.id) }}">
+            <img src="{{ product.image_url }}" alt="{{ product.name }}" loading="lazy" onerror="this.src='https://placehold.co/600x450/4f46e5/ffffff?text={{ product.name | urlencode }}';">
+          </a>
+        </div>
+        <div class="product-body">
+          <div class="product-category">{{ product.category_name }}</div>
+          <h3 class="product-title">
+            <a href="{{ url_for('shop.product_detail', product_id=product.id) }}" title="{{ product.name }}">
+              {{ product.name }}
+            </a>
+          </h3>
+
+          <div class="product-price-row">
+            <div class="product-price">{{ product.price | currency }}</div>
+            {% if product.stock > 10 %}
+              <span class="stock-tag stock-in">In Stock</span>
+            {% elif product.stock > 0 %}
+              <span class="stock-tag stock-low">Low: {{ product.stock }}</span>
+            {% else %}
+              <span class="stock-tag stock-out">Out of Stock</span>
+            {% endif %}
+          </div>
+
+          <div class="product-actions">
+            {% if product.stock > 0 %}
+              <button type="button" class="btn btn-primary btn-block btn-quick-add" data-product-id="{{ product.id }}">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+              </button>
+            {% else %}
+              <button type="button" class="btn btn-secondary btn-block" disabled>
+                Out of Stock
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <!-- Empty State -->
+    <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 4rem 2rem; text-align: center; margin-bottom: 4rem;">
+      <div style="font-size: 3.5rem; color: var(--secondary); margin-bottom: 1rem;">
+        <i class="bi bi-search"></i>
+      </div>
+      <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--dark); margin-bottom: 0.5rem;">No products found</h3>
+      <p style="color: var(--secondary); max-width: 450px; margin: 0 auto 1.5rem;">
+        We couldn't find any products matching your current search or category criteria. Try broadening your terms or clear filters.
+      </p>
+      <a href="{{ url_for('shop.products') }}" class="btn btn-primary">
+        <i class="bi bi-arrow-counterclockwise"></i> Clear All Filters
+      </a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
